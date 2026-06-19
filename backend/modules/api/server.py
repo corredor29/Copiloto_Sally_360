@@ -17,6 +17,7 @@ from modules.api.routes.alerts import router as alerts_router
 from modules.api.routes.vehicles import router as vehicles_router
 from modules.api.routes.reports import router as reports_router
 from modules.api.routes.agent import router as agent_router
+from modules.api.routes.agent_upload import router as agent_upload_router
 
 # ACOPLAMIENTO CON EL PAQUETE DE DATASET (HEILING)
 try:
@@ -95,6 +96,7 @@ app.include_router(alerts_router,   prefix="/alerts",   tags=["Alertas"])
 app.include_router(vehicles_router, prefix="/vehicles", tags=["Vehículos"])
 app.include_router(reports_router,  prefix="/reports",  tags=["Reportes"])
 app.include_router(agent_router,    prefix="/agent",    tags=["Agente"])
+app.include_router(agent_upload_router, prefix="/agent", tags=["Agente Upload"])
 
 
 # ── Health check ─────────────────────────────────────────────────────────────
