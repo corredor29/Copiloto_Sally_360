@@ -5,62 +5,49 @@
     "yolo": {
         "detecciones": [
             {
-                "clase": "vehiculo",
-                "clase_original": "car",
-                "confianza": 0.67,
-                "bbox": [
-                    242.13,
-                    98.02,
-                    448.72,
-                    206.81
-                ]
-            },
-            {
                 "clase": "peaton",
                 "clase_original": "person",
-                "confianza": 0.61,
+                "confianza": 0.89,
                 "bbox": [
-                    12.53,
-                    89.62,
-                    541.48,
-                    354.24
+                    10.62,
+                    22.51,
+                    738.55,
+                    407.61
                 ]
             }
         ],
-        "total": 2,
+        "total": 1,
         "clases": [
-            "vehiculo",
             "peaton"
         ],
         "error": null
     },
     "conductor": {
         "estado": "fatigado",
-        "detalle": "El conductor muestra signos claros de cansancio con ojos cerrados y apoyando la cabeza en su mano.",
+        "detalle": "El conductor muestra signos claros de cansancio con los ojos semicerrados.",
         "confianza": 0.95,
         "objetos_detectados": [],
         "error": null,
-        "tokens": 976
+        "tokens": 967
     },
     "via": {
-        "estado": "critico",
-        "detalle": "El conductor parece estar distraído o dormido, lo que representa un riesgo de colisión inminente.",
-        "confianza": 0.95,
+        "estado": "peligro",
+        "detalle": "Un peatón está invadiendo la calzada de forma insegura.",
+        "confianza": 0.9,
         "riesgos": [
-            "condicion_climatica",
-            "vehiculo_cercano"
+            "peaton"
         ],
         "error": null,
-        "tokens": 960
+        "tokens": 936
     },
     "alerta": {
         "nivel": "critico",
-        "mensaje": "🔴 CRÍTICO: Peligro de colisión inminente u obstáculo insuperable en vía.",
+        "mensaje": "🔴 CRÍTICO: Conductor incapacitado/distraído en escenario de peligro vial.",
         "conductor_estado": "fatigado",
-        "conductor_detalle": "El conductor muestra signos claros de cansancio con ojos cerrados y apoyando la cabeza en su mano.",
-        "via_estado": "critico",
-        "via_detalle": "El conductor parece estar distraído o dormido, lo que representa un riesgo de colisión inminente.",
-        "confianza_promedio": 0.95
+        "conductor_detalle": "El conductor muestra signos claros de cansancio con los ojos semicerrados.",
+        "via_estado": "peligro",
+        "via_detalle": "Un peatón está invadiendo la calzada de forma insegura.",
+        "confianza_promedio": 0.93
     },
-    "tokens_total": 1936
+    "tokens_total": 1903
 }
