@@ -65,6 +65,15 @@ def emitir_asistente_voz(mensaje: str):
     hilo.start()
 
 
+def emitir_saludo_bienvenida():
+    """
+    Emite un saludo inicial de presentación al arrancar el sistema
+    para confirmar que el motor de audio y asistencia de Sally está activo.
+    """
+    frase = "Hola, soy Sally, tu asistente de cabina inteligente. Estoy lista para monitorear la ruta y asistir al conductor."
+    emitir_asistente_voz(frase)
+
+
 def procesar_frame(filepath: str, vehiculo_id: str = "CAM-001") -> dict:
     """
     Procesa un frame completo ejecutando el pipeline secuencial de Inteligencia Artificial:
