@@ -1,31 +1,23 @@
-/**
- * COPILOTO 360 — Monitor de Vehículo en Tiempo Real
- * VehicleMonitor.jsx
- *
- * Panel que se abre al hacer click en un vehículo.
- * Permite subir un video y ver el análisis de IA en vivo.
- */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   X, Upload, Play, RefreshCw, ShieldAlert, AlertTriangle,
-  Info, CheckCircle2, Activity, Video, Loader2, Eye
+  CheckCircle2, Video, Loader2
 } from 'lucide-react';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? '';
 
-// ── Colores por nivel ──────────────────────────────────────────────────────
 const NIVEL = {
-  critico: { label: 'CRÍTICO',   ring: 'ring-red-500',    bg: 'bg-red-500/15',    text: 'text-red-400',    icon: ShieldAlert,    dot: 'bg-red-500 animate-pulse'    },
-  alto:    { label: 'ALTO',      ring: 'ring-orange-500', bg: 'bg-orange-500/15', text: 'text-orange-400', icon: AlertTriangle,  dot: 'bg-orange-500'                },
-  medio:   { label: 'PRECAUCIÓN',ring: 'ring-amber-500',  bg: 'bg-amber-500/15',  text: 'text-amber-400',  icon: AlertTriangle,  dot: 'bg-amber-400'                 },
-  bajo:    { label: 'NORMAL',    ring: 'ring-emerald-500',bg: 'bg-emerald-500/15',text: 'text-emerald-400',icon: CheckCircle2,   dot: 'bg-emerald-400'               },
+  critico: { label: 'CRÍTICO',    ring: 'ring-red-500',    bg: 'bg-red-500/15',    text: 'text-red-400',    icon: ShieldAlert,   dot: 'bg-red-500 animate-pulse'    },
+  alto:    { label: 'ALTO',       ring: 'ring-orange-500', bg: 'bg-orange-500/15', text: 'text-orange-400', icon: AlertTriangle, dot: 'bg-orange-500'                },
+  medio:   { label: 'PRECAUCIÓN', ring: 'ring-amber-500',  bg: 'bg-amber-500/15',  text: 'text-amber-400',  icon: AlertTriangle, dot: 'bg-amber-400'                 },
+  bajo:    { label: 'NORMAL',     ring: 'ring-emerald-500',bg: 'bg-emerald-500/15',text: 'text-emerald-400',icon: CheckCircle2,  dot: 'bg-emerald-400'               },
 };
 const nv = (n) => NIVEL[n] || NIVEL.bajo;
 
 export default function VehicleMonitor({ vehiculo, onClose }) {
   const [file,       setFile]       = useState(null);
   const [dragging,   setDragging]   = useState(false);
-  const [status,     setStatus]     = useState(null);   // respuesta de /agent/status/{id}
+  const [status,     setStatus]     = useState(null);
   const [uploading,  setUploading]  = useState(false);
   const [error,      setError]      = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -34,7 +26,14 @@ export default function VehicleMonitor({ vehiculo, onClose }) {
 
   const vid = vehiculo.vehiculo_id;
 
-  // ── Polling del estado ────────────────────────────────────────────────────
+  // Cerrar con Escape
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose]);
+
+  // Polling del estado
   const fetchStatus = useCallback(async () => {
     try {
       const r = await fetch(`${BASE_URL}/agent/status/${vid}`);
@@ -55,7 +54,7 @@ export default function VehicleMonitor({ vehiculo, onClose }) {
     return () => clearInterval(intervalRef.current);
   }, [status?.estado, fetchStatus]);
 
-  // ── Manejo de archivo ─────────────────────────────────────────────────────
+  // Manejo de archivo
   const handleFile = (f) => {
     if (!f) return;
     const ext = f.name.split('.').pop().toLowerCase();
@@ -74,7 +73,7 @@ export default function VehicleMonitor({ vehiculo, onClose }) {
     handleFile(e.dataTransfer.files[0]);
   };
 
-  // ── Subir y analizar ──────────────────────────────────────────────────────
+  // Subir y analizar
   const handleUpload = async () => {
     if (!file) return;
     setUploading(true);
@@ -93,7 +92,6 @@ export default function VehicleMonitor({ vehiculo, onClose }) {
       const data = await r.json();
       if (!r.ok) throw new Error(data.detail || 'Error al subir el video');
 
-      // Empezar polling inmediatamente
       setStatus({ estado: 'iniciando', progreso: 0, nivel: null, mensaje: 'Video recibido...' });
       intervalRef.current = setInterval(fetchStatus, 1500);
     } catch (e) {
@@ -103,25 +101,27 @@ export default function VehicleMonitor({ vehiculo, onClose }) {
     }
   };
 
-  // ── UI helpers ────────────────────────────────────────────────────────────
-  const isRunning  = status?.estado === 'procesando' || status?.estado === 'iniciando';
-  const isDone     = status?.estado === 'completado';
-  const isError    = status?.estado === 'error';
-  const nivel      = status?.nivel || 'bajo';
-  const c          = nv(nivel);
-  const NivelIcon  = c.icon;
-  const metricas   = status?.resultado?.metricas_globales || {};
+  const isRunning = status?.estado === 'procesando' || status?.estado === 'iniciando';
+  const isDone    = status?.estado === 'completado';
+  const isError   = status?.estado === 'error';
+  const nivel     = status?.nivel || 'bajo';
+  const c         = nv(nivel);
+  const NivelIcon = c.icon;
+  const metricas  = status?.resultado?.metricas_globales || {};
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-stretch sm:items-center sm:justify-center bg-black/70 backdrop-blur-sm sm:p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+    >
       <div className={`
-        relative w-full max-w-2xl bg-zinc-900 rounded-3xl border shadow-2xl overflow-hidden
-        transition-all duration-300
+        relative w-full h-full sm:h-auto sm:max-w-2xl bg-zinc-900 sm:rounded-3xl border shadow-2xl
+        flex flex-col transition-all duration-300
         ${isDone ? `${c.ring} ring-1` : 'border-zinc-700'}
       `}>
 
         {/* HEADER */}
-        <div className="flex items-center justify-between px-7 pt-6 pb-4 border-b border-zinc-800">
+        <div className="flex items-center justify-between px-5 sm:px-7 pt-5 sm:pt-6 pb-4 border-b border-zinc-800 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-zinc-800 rounded-xl border border-zinc-700">
               <Video size={20} className="text-indigo-400" />
@@ -139,9 +139,10 @@ export default function VehicleMonitor({ vehiculo, onClose }) {
           </button>
         </div>
 
-        <div className="p-7 space-y-6">
+        {/* CONTENIDO SCROLLABLE */}
+        <div className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-6">
 
-          {/* ESTADO EN VIVO — aparece cuando hay algo procesando o completado */}
+          {/* ESTADO EN VIVO */}
           {status && status.estado !== 'idle' && (
             <div className={`p-5 rounded-2xl border ${c.bg} ${c.ring.replace('ring-','border-').replace('500','500/30')}`}>
               <div className="flex items-center justify-between mb-3">
@@ -157,7 +158,6 @@ export default function VehicleMonitor({ vehiculo, onClose }) {
 
               <p className="text-sm text-zinc-300 mb-3">{status.mensaje}</p>
 
-              {/* Barra de progreso */}
               {(isRunning || isDone) && (
                 <div className="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
                   <div
@@ -169,9 +169,9 @@ export default function VehicleMonitor({ vehiculo, onClose }) {
                 </div>
               )}
 
-              {/* Métricas finales */}
+              {/* Métricas finales — 2x2 en mobile, 4 columnas en desktop */}
               {isDone && Object.keys(metricas).length > 0 && (
-                <div className="mt-4 grid grid-cols-4 gap-2">
+                <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
                     { key: 'critico', label: 'Críticos', color: 'text-red-400'    },
                     { key: 'alto',    label: 'Altos',    color: 'text-orange-400' },
@@ -194,10 +194,9 @@ export default function VehicleMonitor({ vehiculo, onClose }) {
             </div>
           )}
 
-          {/* ZONA DE UPLOAD — siempre visible si no está procesando */}
+          {/* ZONA DE UPLOAD */}
           {!isRunning && (
             <div>
-              {/* Preview del video seleccionado */}
               {previewUrl ? (
                 <div className="relative rounded-2xl overflow-hidden border border-zinc-700 bg-black aspect-video mb-4">
                   <video
@@ -213,15 +212,15 @@ export default function VehicleMonitor({ vehiculo, onClose }) {
                   </button>
                 </div>
               ) : (
-                /* Drop zone */
+                /* Drop zone — min-h-40 en mobile */
                 <div
                   onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
                   onDragLeave={() => setDragging(false)}
                   onDrop={onDrop}
                   onClick={() => fileInputRef.current?.click()}
                   className={`
-                    flex flex-col items-center justify-center gap-3 p-10 rounded-2xl border-2 border-dashed
-                    cursor-pointer transition-all duration-200
+                    flex flex-col items-center justify-center gap-3 p-6 sm:p-10 rounded-2xl border-2 border-dashed
+                    min-h-40 cursor-pointer transition-all duration-200
                     ${dragging
                       ? 'border-indigo-500 bg-indigo-500/10'
                       : 'border-zinc-700 hover:border-zinc-500 bg-zinc-950 hover:bg-zinc-800/40'
@@ -247,14 +246,12 @@ export default function VehicleMonitor({ vehiculo, onClose }) {
                 </div>
               )}
 
-              {/* Error */}
               {error && (
                 <p className="mt-2 text-xs text-red-400 bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/20">
                   {error}
                 </p>
               )}
 
-              {/* Botón de análisis */}
               <button
                 onClick={handleUpload}
                 disabled={!file || uploading}
@@ -273,7 +270,6 @@ export default function VehicleMonitor({ vehiculo, onClose }) {
                 }
               </button>
 
-              {/* Si hay análisis completado, mostrar botón para analizar otro */}
               {isDone && (
                 <button
                   onClick={() => { setStatus(null); setFile(null); setPreviewUrl(null); }}
@@ -286,7 +282,6 @@ export default function VehicleMonitor({ vehiculo, onClose }) {
             </div>
           )}
 
-          {/* Si está procesando, mostrar botón de actualizar manualmente */}
           {isRunning && (
             <button
               onClick={fetchStatus}

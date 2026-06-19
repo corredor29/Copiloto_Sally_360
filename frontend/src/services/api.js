@@ -136,6 +136,14 @@ export async function runAgent(vehiculo_id, filepath) {
   });
 }
 
+export async function addVehicle(data) {
+  try {
+    return await apiFetch('/vehicles/', { method: 'POST', body: JSON.stringify(data) });
+  } catch {
+    return { ...data, local: true };
+  }
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /** Devuelve clase de color Tailwind según nivel de alerta */
