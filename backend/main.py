@@ -1,79 +1,107 @@
 import os
 import json
 from dotenv import load_dotenv
-from modules.agent.agent import procesar_frame, correr_agente
+from modules.agent.agent import procesar_frame
 from modules.vision.video_processor import procesar_video
 
+# Cargar variables de entorno (.env)
 load_dotenv()
 
-def verificar_entorno():
-    """Verifica que la API Key esté configurada correctamente."""
+
+def verificar_entorno() -> bool:
+    """Verifica de forma defensiva que la API Key de OpenAI esté configurada en el entorno."""
     if not os.getenv("OPENAI_API_KEY"):
-        print("❌ ERROR: La variable 'OPENAI_API_KEY' no está configurada en el archivo .env")
+        print("\nERROR: La variable 'OPENAI_API_KEY' no está configurada en el archivo .env")
+        print("Por favor, crea un archivo .env en la raíz con: OPENAI_API_KEY=tu_clave_aqui")
         return False
     return True
 
-def ejecutar_prueba_imagen(ruta_imagen: str):
-    """Prueba el pipeline con una sola imagen."""
-    print(f"\n--- Probando Pipeline con Imagen ---")
+
+def ejecutar_prueba_imagen(ruta_imagen: str, vehiculo_id: str):
+    """
+    Prueba el pipeline secuencial completo (YOLOv8 + GPT-4o) con una sola imagen estática.
+    """
+    print(f"\n--- Probando Pipeline con Imagen Estática ---")
+    print(f"Ruta objetivo: {ruta_imagen}")
+    print(f"Asociando al Vehículo: {vehiculo_id}")
+    
     if not os.path.exists(ruta_imagen):
-        print(f"⚠️ Archivo de imagen no encontrado en: {ruta_imagen}")
-        print("Por favor, coloca una imagen de prueba válida.")
+        print(f"Archivo de imagen no encontrado en: {ruta_imagen}")
+        print(f"Asegúrate de colocar una foto de prueba válida dentro de la carpeta 'test_files/'.")
         return
 
-    resultado = procesar_frame(ruta_imagen, vehiculo_id="TEST-IMG-001")
+    # Corre el pipeline individual pasándole el carro correspondiente
+    resultado = procesar_frame(ruta_imagen, vehiculo_id=vehiculo_id)
     
-    # Guardar el JSON resultante para inspección visual de la estructura
-    ruta_salida = "resultado_prueba_imagen.json"
+    # Guardar el JSON resultante de forma estructurada para inspección del equipo
+    ruta_salida = f"resultado_prueba_{vehiculo_id}.json"
     with open(ruta_salida, "w", encoding="utf-8") as f:
         json.dump(resultado, f, indent=4, ensure_ascii=False)
-    print(f"\n💾 Análisis guardado con éxito en '{ruta_salida}'")
+        
+    print(f"\n[EXITO] Análisis del frame guardado con éxito en: '{ruta_salida}'")
 
-def ejecutar_prueba_video(ruta_video: str):
-    """Prueba el pipeline con un archivo de video."""
-    print(f"\n--- Probando Pipeline con Video ---")
+
+def ejecutar_prueba_video(ruta_video: str, vehiculo_id: str):
+    """
+    Prueba el pipeline de video aplicando muestreo temporal inteligente (1 frame por segundo)
+    y empaquetando el reporte global para la base de datos distribuida de FiftyOne.
+    """
+    print(f"\n--- Probando Pipeline con Archivo de Video ---")
+    print(f"Ruta objetivo: {ruta_video}")
+    print(f"Asociando al Vehículo: {vehiculo_id}")
+    
     if not os.path.exists(ruta_video):
-        print(f"⚠️ Archivo de video no encontrado en: {ruta_video}")
-        print("Por favor, coloca un video corto de prueba (.mp4).")
+        print(f"Archivo de video no encontrado en: {ruta_video}")
+        print(f"Por favor, coloca un video corto de prueba (.mp4) en 'test_files/viaje_prueba.mp4'.")
         return
 
     # Procesamos el video muestreando 1 frame por segundo (fps_deseados=1.0)
-    resultados_video = procesar_video(
+    # La versión de 'procesar_video' devuelve el dict 'reporte_final'
+    reporte_final = procesar_video(
         video_path=ruta_video, 
         fps_deseados=1.0, 
-        vehiculo_id="TEST-VID-001"
+        vehiculo_id=vehiculo_id
     )
     
-    # Guardar los resultados del video entero
-    ruta_salida = "resultado_prueba_video.json"
+    # Guardar el JSON empaquetado del carro
+    ruta_salida = f"reporte_video_{vehiculo_id}.json"
     with open(ruta_salida, "w", encoding="utf-8") as f:
-        json.dump(resultados_video, f, indent=4, ensure_ascii=False)
-    print(f"\n💾 Historial de video guardado con éxito en '{ruta_salida}'")
+        json.dump(reporte_final, f, indent=4, ensure_ascii=False)
+        
+    print(f"\n[EXITO] Historial global del vehículo guardado con éxito en: '{ruta_salida}'")
 
 
 if __name__ == "__main__":
-    print("🤖 COPILOTO 360 — MÓDULO AGENTE-VISION (TEST MENU)")
+    print("==========================================================")
+    print("COPILOTO 360 — MODULO AGENTE-VISION (ENTORNO DE PRUEBAS)")
+    print("==========================================================")
     
     if verificar_entorno():
-        # Crea una carpeta de test si no existe para organizar tus archivos de prueba
+        # Crear de forma automática el directorio de recursos de prueba si no existe
         os.makedirs("test_files", exist_ok=True)
         
-        # 💡 Configura aquí las rutas de tus archivos de prueba locales
+        # Configuración de las rutas por defecto para testing local
         IMAGEN_TEST = "test_files/conductor_prueba.jpg"
         VIDEO_TEST = "test_files/viaje_prueba.mp4"
         
-        print("\nSelecciona el modo de prueba:")
-        print("1. Procesar una Imagen estática")
-        print("2. Procesar un Video (.mp4)")
-        print("3. Salir")
+        print("\nMenú de Selección de Modos:")
+        print("  1. Intentar procesar una Imagen estática")
+        print("  2. Intentar procesar un Video (.mp4) con aislamiento temporal")
+        print("  3. Salir del evaluador")
         
         opcion = input("\nElige una opción (1-3): ").strip()
         
-        if opcion == "1":
-            ejecutar_prueba_imagen(IMAGEN_TEST)
-        elif opcion == "2":
-            ejecutar_prueba_video(VIDEO_TEST)
+        if opcion in ["1", "2"]:
+            # Pedimos el ID dinámicamente para simular el comportamiento del sistema multi-carro
+            id_ingresado = input("Ingrese el ID del vehículo a simular (Ej: CAM-001, BUS-005): ").strip().upper()
+            vehiculo_id = id_ingresado if id_ingresado else "CARRO-GENERICO"
+            
+            if opcion == "1":
+                ejecutar_prueba_imagen(IMAGEN_TEST, vehiculo_id)
+            elif opcion == "2":
+                ejecutar_prueba_video(VIDEO_TEST, vehiculo_id)
+                
         elif opcion == "3":
-            print("Saliendo del evaluador de pruebas.")
+            print("\nCerrando el entorno de pruebas del agente. Módulo listo para producción.")
         else:
-            print("Opción inválida.")
+            print("\nOpción inválida. Ejecute el script de nuevo para reintentar.")
