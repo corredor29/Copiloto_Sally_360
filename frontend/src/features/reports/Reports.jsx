@@ -1,17 +1,13 @@
-/**
- * COPILOTO 360 — Reportes y Estadísticas
- * Conectado al backend: GET /reports/, POST /reports/generate
- */
 import { useState, useEffect } from 'react';
 import {
   Calendar, Download, FileText, BarChart3, TrendingUp, Clock,
-  AlertTriangle, RefreshCw, FileSpreadsheet
+  AlertTriangle, RefreshCw
 } from 'lucide-react';
 import { fetchReports, formatDate, formatBytes } from '../../services/api.js';
 
 export default function Reports() {
-  const [reports,  setReports]  = useState([]);
-  const [loading,  setLoading]  = useState(true);
+  const [reports,   setReports]   = useState([]);
+  const [loading,   setLoading]   = useState(true);
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [generating, setGenerating] = useState(false);
 
@@ -27,25 +23,24 @@ export default function Reports() {
 
   useEffect(() => { load(); }, []);
 
-  // KPIs derivados de los reportes reales
   const totalFrames   = reports.reduce((s, r) => s + (r.total_frames || 0), 0);
   const totalCriticos = reports.reduce((s, r) => s + (r.resumen?.critico || 0), 0);
   const totalAlertas  = reports.reduce((s, r) => s + Object.values(r.resumen || {}).reduce((a, b) => a + b, 0), 0);
   const pctAtendidas  = totalAlertas > 0 ? Math.round(((totalAlertas - totalCriticos) / totalAlertas) * 100) : 100;
 
   const kpis = [
-    { label: 'Frames analizados',   value: totalFrames.toLocaleString('es-CO'), sub: 'Total flota',              color: 'text-emerald-400', bg: 'bg-emerald-500/10', icon: TrendingUp  },
-    { label: 'Horas estimadas',     value: Math.round(totalFrames / 3600) + ' hrs', sub: 'A 1 frame/seg',       color: 'text-zinc-300',    bg: 'bg-zinc-800',       icon: Clock       },
-    { label: 'Alertas atendidas',   value: `${pctAtendidas}%`,             sub: 'Tasa de respuesta',            color: 'text-amber-400',   bg: 'bg-amber-500/10',   icon: AlertTriangle },
+    { label: 'Frames analizados', value: totalFrames.toLocaleString('es-CO'), sub: 'Total flota',         color: 'text-emerald-400', bg: 'bg-emerald-500/10', icon: TrendingUp   },
+    { label: 'Horas estimadas',   value: Math.round(totalFrames / 3600) + ' hrs', sub: 'A 1 frame/seg',  color: 'text-zinc-300',    bg: 'bg-zinc-800',       icon: Clock        },
+    { label: 'Alertas atendidas', value: `${pctAtendidas}%`,             sub: 'Tasa de respuesta',       color: 'text-amber-400',   bg: 'bg-amber-500/10',   icon: AlertTriangle},
   ];
 
   return (
     <div className="flex-1 flex flex-col">
       {/* NAVBAR */}
-      <header className="h-16 border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-10">
+      <header className="h-16 border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-md px-4 md:px-8 flex items-center justify-between sticky top-0 z-10">
         <h2 className="text-xl font-semibold text-zinc-200">Reportes y Estadísticas</h2>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-zinc-500">Módulo de Exportación</span>
+          <span className="hidden sm:block text-xs text-zinc-500">Módulo de Exportación</span>
           <button
             onClick={load}
             className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-500 hover:text-zinc-300 transition-colors"
@@ -55,7 +50,7 @@ export default function Reports() {
         </div>
       </header>
 
-      <main className="p-8 max-w-7xl w-full mx-auto space-y-6">
+      <main className="p-4 md:p-8 max-w-7xl w-full mx-auto space-y-6">
 
         {/* FILTRO DE FECHAS */}
         <div className="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 space-y-4">
@@ -132,39 +127,41 @@ export default function Reports() {
               {reports.map((r, i) => {
                 const criticos = r.resumen?.critico ?? 0;
                 return (
-                  <div key={i} className="p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-zinc-800/20 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 rounded-xl border bg-indigo-500/10 text-indigo-400 border-indigo-500/20">
-                        <FileText size={20} />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium text-zinc-200 font-mono">{r.archivo}</h4>
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                          Vehículo: <span className="text-zinc-400">{r.vehiculo_id}</span>
-                          {' · '}{r.total_frames} frames
-                          {' · '}{formatBytes(r.tamaño_bytes)}
-                          {' · '}{formatDate(r.generado_en)}
-                        </p>
-                        {/* Resumen de alertas */}
-                        <div className="flex items-center gap-3 mt-1.5">
-                          {criticos > 0 && (
-                            <span className="text-[11px] text-red-400 font-semibold">{criticos} crítico{criticos > 1 ? 's' : ''}</span>
-                          )}
-                          {(r.resumen?.alto ?? 0) > 0 && (
-                            <span className="text-[11px] text-orange-400">{r.resumen.alto} alto{r.resumen.alto > 1 ? 's' : ''}</span>
-                          )}
-                          {(r.resumen?.medio ?? 0) > 0 && (
-                            <span className="text-[11px] text-amber-400">{r.resumen.medio} medio{r.resumen.medio > 1 ? 's' : ''}</span>
-                          )}
+                  <div key={i} className="p-5 hover:bg-zinc-800/20 transition-colors">
+                    {/* Nombre + botón: apilados en mobile, en fila en desktop */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="p-3 rounded-xl border bg-indigo-500/10 text-indigo-400 border-indigo-500/20 flex-shrink-0">
+                          <FileText size={20} />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-sm font-medium text-zinc-200 font-mono truncate">{r.archivo}</h4>
+                          <p className="text-xs text-zinc-500 mt-0.5">
+                            Vehículo: <span className="text-zinc-400">{r.vehiculo_id}</span>
+                            {' · '}{r.total_frames} frames
+                            {' · '}{formatBytes(r.tamaño_bytes)}
+                            {' · '}{formatDate(r.generado_en)}
+                          </p>
+                          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                            {criticos > 0 && (
+                              <span className="text-[11px] text-red-400 font-semibold">{criticos} crítico{criticos > 1 ? 's' : ''}</span>
+                            )}
+                            {(r.resumen?.alto ?? 0) > 0 && (
+                              <span className="text-[11px] text-orange-400">{r.resumen.alto} alto{r.resumen.alto > 1 ? 's' : ''}</span>
+                            )}
+                            {(r.resumen?.medio ?? 0) > 0 && (
+                              <span className="text-[11px] text-amber-400">{r.resumen.medio} medio{r.resumen.medio > 1 ? 's' : ''}</span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-                      <button className="flex items-center gap-1.5 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium rounded-lg border border-zinc-700/50 transition-colors">
-                        <Download size={14} />
-                        <span>Descargar</span>
-                      </button>
+                      <div className="flex items-center gap-3 w-full sm:w-auto justify-end sm:justify-start">
+                        <button className="flex items-center gap-1.5 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium rounded-lg border border-zinc-700/50 transition-colors">
+                          <Download size={14} />
+                          <span>Descargar</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );

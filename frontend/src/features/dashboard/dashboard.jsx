@@ -1,7 +1,3 @@
-/**
- * COPILOTO 360 — Dashboard / Panel de Inicio
- * Conectado al backend: GET /vehicles/, GET /alerts/criticas
- */
 import { useState, useEffect } from 'react';
 import { Car, FileText, ShieldAlert, AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react';
 import { fetchVehicles, fetchAlerts, nivelColor } from '../../services/api.js';
@@ -26,13 +22,12 @@ export default function Dashboard() {
 
   useEffect(() => { load(); }, []);
 
-  // KPIs derivados
   const totalVehiculos  = vehicles?.total ?? '—';
   const alertasCriticas = alerts?.alertas?.filter(a => a.nivel === 'critico').length ?? '—';
   const totalAlertas    = alerts?.total ?? '—';
 
   const stats = [
-    { name: 'Vehículos registrados', value: totalVehiculos, icon: Car,        color: 'text-blue-400',   bg: 'bg-blue-500/10'   },
+    { name: 'Vehículos registrados', value: totalVehiculos,  icon: Car,        color: 'text-blue-400',   bg: 'bg-blue-500/10'   },
     { name: 'Alertas críticas',      value: alertasCriticas, icon: ShieldAlert, color: 'text-red-400',    bg: 'bg-red-500/10'    },
     { name: 'Alertas totales',       value: totalAlertas,    icon: FileText,    color: 'text-purple-400', bg: 'bg-purple-500/10' },
   ];
@@ -42,10 +37,10 @@ export default function Dashboard() {
   return (
     <div className="flex-1 flex flex-col">
       {/* NAVBAR */}
-      <header className="h-16 border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-10">
+      <header className="h-16 border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-md px-4 md:px-8 flex items-center justify-between sticky top-0 z-10">
         <h2 className="text-xl font-semibold text-zinc-200">Panel de Inicio</h2>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-zinc-400 bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800">
+          <span className="hidden sm:block text-sm text-zinc-400 bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800">
             {new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'short' })}
           </span>
           <button
@@ -59,7 +54,7 @@ export default function Dashboard() {
       </header>
 
       {/* CONTENIDO */}
-      <main className="p-8 max-w-7xl w-full mx-auto space-y-8">
+      <main className="p-4 md:p-8 max-w-7xl w-full mx-auto space-y-8">
 
         {/* TARJETAS KPI */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -114,14 +109,14 @@ export default function Dashboard() {
                   const c = nivelColor(alert.nivel);
                   return (
                     <div key={i} className="py-4 flex items-center justify-between first:pt-0 last:pb-0">
-                      <div className="flex items-center gap-4">
-                        <span className={`w-2 h-2 rounded-full ${c.dot} ${alert.nivel === 'critico' ? 'shadow-lg shadow-red-500/50' : ''}`} />
-                        <div>
+                      <div className="flex items-center gap-4 min-w-0">
+                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${c.dot} ${alert.nivel === 'critico' ? 'shadow-lg shadow-red-500/50' : ''}`} />
+                        <div className="min-w-0">
                           <p className="text-sm font-medium text-zinc-200">{alert.vehiculo_id}</p>
                           <p className="text-xs text-zinc-400 truncate max-w-xs">{alert.mensaje}</p>
                         </div>
                       </div>
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${c.bg} ${c.text} border ${c.border}`}>
+                      <span className={`flex-shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${c.bg} ${c.text} border ${c.border}`}>
                         {alert.nivel}
                       </span>
                     </div>
