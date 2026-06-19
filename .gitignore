@@ -1,0 +1,60 @@
+# ─── Python ───────────────────────────────────────
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# ─── Variables de entorno (NUNCA subir) ───────────
+.env
+.env.local
+.env.production
+backend/.env
+frontend/.env.local
+
+# ─── Node / Frontend ──────────────────────────────
+node_modules/
+frontend/node_modules/
+frontend/dist/
+*.log
+npm-debug.log*
+
+# ─── Datos e imágenes (pueden ser pesados) ────────
+data/
+backend/data/
+*.jpg
+*.jpeg
+*.png
+*.mp4
+*.avi
+*.mov
+*.webp
+
+# ─── FiftyOne ─────────────────────────────────────
+.fiftyone/
+
+# ─── YOLO modelos descargados ─────────────────────
+*.pt
+*.onnx
+*.weights
+
+# ─── IDEs ─────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ─── MongoDB ──────────────────────────────────────
+data/db/
+mongodb-data/
+
+# ─── Reportes generados ───────────────────────────
+backend/data/outputs/
+*.csv
