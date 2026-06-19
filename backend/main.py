@@ -4,7 +4,12 @@ from dotenv import load_dotenv
 from modules.agent.agent import procesar_frame
 from modules.vision.video_processor import procesar_video
 
-# Cargar variables de entorno (.env)
+try:
+    from modules.dataset import inicializar_fiftyone, cargar_reporte_en_fiftyone
+    DATASET_DISPONIBLE = True
+except ImportError:
+    DATASET_DISPONIBLE = False
+
 load_dotenv()
 
 
@@ -70,6 +75,18 @@ def ejecutar_prueba_video(ruta_video: str, vehiculo_id: str):
         
     print(f"\n[EXITO] Historial global del vehículo guardado con éxito en: '{ruta_salida}'")
 
+    # ACOPLAMIENTO DE PRUEBA: Si el modulo de Heiling esta listo, guarda en FiftyOne
+    if DATASET_DISPONIBLE:
+        print(f"\n[INTEGRACION] Enviando reporte final al motor de ingesta de FiftyOne...")
+        try:
+            cargar_reporte_en_fiftyone(reporte_final, ruta_permanente_video=ruta_video)
+            print("[EXITO INTEGRACION] Datos cargados correctamente en la base de datos.")
+        except Exception as e:
+            print(f"AVISO: Fallo la insercion automatica en FiftyOne: {e}")
+    else:
+        print(f"\n[AVISO] El modulo 'modules.dataset' no fue detectado o esta incompleto.")
+        print("Los datos solo se guardaron en el archivo JSON local.")
+
 
 if __name__ == "__main__":
     print("==========================================================")
@@ -77,10 +94,16 @@ if __name__ == "__main__":
     print("==========================================================")
     
     if verificar_entorno():
-        # Crear de forma automática el directorio de recursos de prueba si no existe
+        # INICIALIZACION DE BASE DE DATOS: Prepara FiftyOne antes de interactuar con el menu
+        if DATASET_DISPONIBLE:
+            print("[SISTEMA] Inicializando base de datos local de FiftyOne...")
+            try:
+                inicializar_fiftyone()
+            except Exception as e:
+                print(f"AVISO: No se pudo levantar el servicio de FiftyOne: {e}")
+        
         os.makedirs("test_files", exist_ok=True)
         
-        # Configuración de las rutas por defecto para testing local
         IMAGEN_TEST = "test_files/conductor_prueba.jpg"
         VIDEO_TEST = "test_files/viaje_prueba.mp4"
         

@@ -1,0 +1,66 @@
+{
+    "vehiculo_id": "CAM-001",
+    "filename": "conductor_prueba.jpg",
+    "filepath": "test_files/conductor_prueba.jpg",
+    "yolo": {
+        "detecciones": [
+            {
+                "clase": "vehiculo",
+                "clase_original": "car",
+                "confianza": 0.67,
+                "bbox": [
+                    242.13,
+                    98.02,
+                    448.72,
+                    206.81
+                ]
+            },
+            {
+                "clase": "peaton",
+                "clase_original": "person",
+                "confianza": 0.61,
+                "bbox": [
+                    12.53,
+                    89.62,
+                    541.48,
+                    354.24
+                ]
+            }
+        ],
+        "total": 2,
+        "clases": [
+            "vehiculo",
+            "peaton"
+        ],
+        "error": null
+    },
+    "conductor": {
+        "estado": "fatigado",
+        "detalle": "El conductor muestra signos claros de cansancio con ojos cerrados y apoyando la cabeza en su mano.",
+        "confianza": 0.95,
+        "objetos_detectados": [],
+        "error": null,
+        "tokens": 976
+    },
+    "via": {
+        "estado": "critico",
+        "detalle": "El conductor parece estar distraído o dormido, lo que representa un riesgo de colisión inminente.",
+        "confianza": 0.95,
+        "riesgos": [
+            "condicion_climatica",
+            "vehiculo_cercano"
+        ],
+        "error": null,
+        "tokens": 960
+    },
+    "alerta": {
+        "nivel": "critico",
+        "mensaje": "🔴 CRÍTICO: Peligro de colisión inminente u obstáculo insuperable en vía.",
+        "conductor_estado": "fatigado",
+        "conductor_detalle": "El conductor muestra signos claros de cansancio con ojos cerrados y apoyando la cabeza en su mano.",
+        "via_estado": "critico",
+        "via_detalle": "El conductor parece estar distraído o dormido, lo que representa un riesgo de colisión inminente.",
+        "confianza_promedio": 0.95
+    },
+    "tokens_total": 1936
+}
