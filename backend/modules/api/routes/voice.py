@@ -20,7 +20,7 @@ from openai import OpenAI
 
 router = APIRouter()
 
-# Cliente OpenAI (usa la OPENAI_API_KEY del .env automáticamente)
+# Cliente OpenAI (usa la OPENAI_API_KEY del .env automáticamentep)
 client = OpenAI()
 
 # Voces disponibles en OpenAI TTS
