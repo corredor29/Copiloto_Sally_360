@@ -106,3 +106,10 @@ def root():
 @app.get("/health", tags=["Health"])
 def health():
     return {"status": "healthy"}
+
+
+# Agrega este import junto a los otros
+from modules.api.routes.voice import router as voice_router
+
+# Agrega esta línea junto a los otros app.include_router(...)
+app.include_router(voice_router, prefix="/voice", tags=["Voz"])
